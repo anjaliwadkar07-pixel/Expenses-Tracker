@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expenses Tracker Web App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    .input-section {
+      margin-bottom: 20px;
+    }
+
+    .input-section label {
+      margin-right: 10px;
+    }
+
+    input, select {
+      padding: 5px;
+      margin-right: 15px;
+    }
+
+    button {
+      padding: 6px 12px;
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    table {
+      width: 80%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background-color: #fff;
+    }
+
+    th, td {
+      border: 1px solid #333;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #337ab7;
+      color: white;
+    }
+
+    .total-row td {
+      font-weight: bold;
+      background-color: #e2e2e2;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Expenses Tracker Web App</h1>
+
+  <div class="input-section">
+    <label>
+      Category:
+      <input type="text" id="category" placeholder="Enter category">
+    </label>
+    <label>
+      Amount:
+      <input type="number" id="amount" placeholder="Enter amount">
+    </label>
+    <label>
+      Date:
+      <input type="date" id="date">
+    </label>
+    <button class="add-btn" onclick="addExpense()">Add</button>
+  </div>
+  
+  <table id="expenseTable">
+    <thead>
+      <tr>
+        <th>S.No</th>
+        <th>Category</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  
+  <button id="saveReportBtn">Save Report (HTML)</button>
+
+  <script>
+    function addExpense() {
+      let category = document.getElementById("category").value;
+      let amount = document.getElementById("amount").value;
+      let date = document.getElementById("date").value;
+
+      if (category === "" || amount === "" || date === "") {
+        alert("Please fill all fields");
+        return;
+      }
+
+      let table = document.getElementById("expenseTable").getElementsByTagName('tbody')[0];
+
+      // Create new row
+      let newRow = table.insertRow();
+
+      // Serial number = current row count
+      let serialNo = table.rows.length;
+
+      // Insert cells
+      newRow.insertCell(0).innerText = serialNo;
+      newRow.insertCell(1).innerText = category;
+      newRow.insertCell(2).innerText = amount;
+      newRow.insertCell(3).innerText = date;
+
+      // Delete button cell
+      let deleteCell = newRow.insertCell(4);
+      let deleteBtn = document.createElement("button");
+      deleteBtn.innerText = "Delete";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.onclick = function () {
+        table.deleteRow(newRow.rowIndex - 1); // remove row
+        updateSerialNumbers(); // re-adjust S.No
+      };
+      deleteCell.appendChild(deleteBtn);
+
+      // Clear inputs
+      document.getElementById("category").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("date").value = "";
+    }
+
+    function updateSerialNumbers() {
+      let table = document.getElementById("expenseTable").getElementsByTagName('tbody')[0];
+      for (let i = 0; i < table.rows.length; i++) {
+        table.rows[i].cells[0].innerText = i + 1; // reset serial numbers
+      }
+    }
+
+    function getFormattedDate() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function downloadHTMLReport() {
+      const table = document.getElementById('expenseTable');
+      if (!table) return alert('Table not found!');
+
+      const clone = table.cloneNode(true);
+
+      const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Expenses Report - ${getFormattedDate()}</title>
+  <style>
+    body{font-family: Arial, sans-serif; padding:20px;}
+    table{border-collapse:collapse; width:100%;}
+    th,td{border:1px solid #777; padding:8px; text-align:center;}
+    thead{background:#2f7fb2; color:white;}
+  </style>
+</head>
+<body>
+  <h1>Expenses Report - ${getFormattedDate()}</h1>
+  ${clone.outerHTML}
+  <p>Generated: ${new Date().toLocaleString()}</p>
+</body>
+</html>`;
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `expenses_report_${getFormattedDate()}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('saveReportBtn').addEventListener('click', downloadHTMLReport);
+  </script>
+
+</body>
+</html>
